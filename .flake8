@@ -1,0 +1,7 @@
+[flake8]
+ignore = E261,E302,E305,E306,F821,F723
+exclude = __pycache__,venv,.git
+max-complexity = 10
+max-line-length = 80
+show-source = True
+statistics = True
