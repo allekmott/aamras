@@ -34,5 +34,8 @@ lint: pipenv
 	$(PIPENV) run flake8 . --select E9,F63,F7,F82
 	$(PIPENV) run flake8 . --exit-zero
 
-test: pipenv typecheck lint
+unittest: pipenv
+	$(PIPENV) run pytest --cov $(PACKAGE)
+
+test: pipenv typecheck lint unittest
 
