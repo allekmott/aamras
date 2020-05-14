@@ -1,6 +1,8 @@
 aamras
 ======
 
+![build](https://github.com/allekmott/aamras/workflows/build/badge.svg)
+
 **aam ras** or *आम रस* - Hindi for mango juice 🥭.
 
 It is pronounced "*arm Russ*" if the *r* in *arm* is silent.
