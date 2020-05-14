@@ -8,7 +8,7 @@ init: pipenv
 	$(PIPENV) install
 
 init-test: pipenv
-	$(PIPENV) sync --dev
+	$(PIPENV) install --dev
 
 pipenv:
 ifeq (, $(shell PATH=$(PATH) which $(PIPENV) 2> /dev/null))
@@ -38,4 +38,3 @@ unittest: pipenv
 	$(PIPENV) run pytest --cov $(PACKAGE)
 
 test: pipenv typecheck lint unittest
-
