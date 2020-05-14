@@ -2,6 +2,7 @@
 from typing import Callable, List, Optional
 import urllib.parse
 
+from selenium.common.exceptions import InvalidCookieDomainException
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -33,11 +34,6 @@ class Driver(LoggerMixin, CookieManagerMixin):
     def __init__(self, driver: WebDriver):
         self.driver = driver
 
-    def init(self, url: str) -> None:
-        # cookie domain must be navigated to before cookies can be loaded
-        self.get(url)
-        self._load_cookies()
-
     def __enter__(self):
         return self
 
@@ -48,6 +44,10 @@ class Driver(LoggerMixin, CookieManagerMixin):
     def title(self):
         return self.driver.title
 
+    @property
+    def url(self):
+        return self.driver.current_url
+
     def close(self):
         self.log.info("driver shutdown initiated")
         self._save_cookies()
@@ -57,21 +57,25 @@ class Driver(LoggerMixin, CookieManagerMixin):
 
     def _load_cookies(self) -> None:
         self.log.info("loading cookies")
-        cookies = self.cookies.load()
+        cookies = self.cookies.get()
 
         for cookie in cookies:
-            self.driver.add_cookie(cookie)
+            try:
+                self.driver.add_cookie(cookie)
+            except InvalidCookieDomainException:
+                pass
 
     def _save_cookies(self):
         cookies = self.driver.get_cookies()
         self.cookies.save(cookies)
 
     def get(self, url: str) -> None:
-        new_url = urllib.parse.urljoin(self.driver.current_url, url)
+        url_new = urllib.parse.urljoin(self.driver.current_url, url)
 
-        self.log.info("navigate to %s" % (new_url))
-        self.driver.get(new_url)
+        self.log.info("navigate to %s" % (url_new))
+        self.driver.get(url_new)
 
+        self._load_cookies()
         self.log_page()
 
     def elements(

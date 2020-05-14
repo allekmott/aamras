@@ -38,14 +38,12 @@ def _options_type_for(name: DriverName) -> Type:
 class DriverFactory(LoggerMixin):
     def create(
             self,
-            url,
             driver_name: Optional[DriverName] = None) -> Driver:
         if not driver_name:
             driver = Driver(self._try_selenium_drivers())
         else:
             driver = Driver(self._get_selenium_driver(driver_name))
 
-        driver.init(url)
         return driver
 
     def _get_options(self, options_type) -> object:
