@@ -11,6 +11,3 @@ pytest-cov = "*"
 
 [packages]
 selenium = "*"
-
-[requires]
-python_version = "3.8"
