@@ -1,9 +1,18 @@
-
 from setuptools import setup
 
 version = "0.0.1"
 
 setup(
+    extras_require={
+        "dev": [
+            "flake8",
+            "mypy",
+            "pytest",
+            "pytest-cov",
+            "pipenv-setup"
+        ]
+    },
+    install_requires=["selenium"],
     name="aamras",
     description="Library for headless browser manipulation",
     version=version,
