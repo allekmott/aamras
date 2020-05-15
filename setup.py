@@ -1,16 +1,42 @@
-from setuptools import setup
 
-version = "0.0.1"
+import os.path
+from setuptools import find_packages, setup
 
-with open("README.md", "r") as file_:
+here = os.path.abspath(os.path.dirname(__file__))
+
+path_readme = os.path.join(here, "README.md")
+path_version = os.path.join(here, "aamras", "__version__.py")
+
+with open(path_readme) as file_:
     long_description = file_.read()
 
+about = {}
+with open(path_version) as file_:
+    exec(file_.read(), about)
+
 setup(
-    name="aamras",
-    version=version,
-    description="Library for headless browser manipulation",
+    name=about["__title__"],
+    version=about["__version__"],
+    description=about["__description__"],
     long_description=long_description,
     long_description_content_type="text/markdown",
+    author=about["__author__"],
+    author_email=about["__author_email__"],
+    url=about["__url__"],
+    packages=find_packages(exclude=["tests", "tests.*"]),
+    license=about["__license__"],
+    data_files=[("", ["LICENSE"])],
+    python_requires=">=3.6",
+    install_requires=["selenium"],
+    extras_require={
+        "dev": [
+            "flake8",
+            "mypy",
+            "pytest",
+            "pytest-cov",
+            "pipenv-setup"
+        ]
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -24,21 +50,4 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Topic :: Software Development :: Libraries"
     ],
-    author="Allek Mott",
-    author_email="allekmott@gmail.com",
-    url="https://github.com/allekmott/aamras",
-    packages=["aamras"],
-    license="GPLv3",
-    data_files=[("", ["LICENSE"])],
-    python_requires=">=3.6",
-    install_requires=["selenium"],
-    extras_require={
-        "dev": [
-            "flake8",
-            "mypy",
-            "pytest",
-            "pytest-cov",
-            "pipenv-setup"
-        ]
-    }
 )
