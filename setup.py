@@ -1,4 +1,3 @@
-
 import os.path
 from setuptools import find_packages, setup
 
@@ -29,13 +28,7 @@ setup(
     python_requires=">=3.6",
     install_requires=["selenium"],
     extras_require={
-        "dev": [
-            "flake8",
-            "mypy",
-            "pytest",
-            "pytest-cov",
-            "pipenv-setup"
-        ]
+        "dev": ["flake8", "mypy", "pytest", "pytest-cov", "pipenv-setup"]
     },
     classifiers=[
         "Development Status :: 3 - Alpha",

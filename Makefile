@@ -18,6 +18,21 @@ ifeq (, $(shell PATH=$(PATH) which $(PIPENV) 2> /dev/null))
 	$(PIP) install pipenv
 endif
 
+twine:
+ifeq (, $(shell PATH=$(PATH) which twine 2> /dev/null))
+	@echo "twine not installed; installing"
+
+	$(PYTHON) -m $(PIP) install --upgrade $(PIP)
+	$(PIP) install pipenv
+endif
+
+release: test twine
+	$(PIPENV) run pipenv-setup sync --dev --pipfile
+	$(PIPENV) run python setup.py sdist bdist_wheel
+
+	twine upload dist/*
+	$(MAKE) clean
+
 run: pipenv
 	$(PIPENV) run $(PYTHON) -m $(PACKAGE)
 
@@ -26,6 +41,7 @@ clean:
 	find . -iname '__pycache__' -delete
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
+	rm -rf build dist aamras.egg-info
 
 typecheck: pipenv
 	$(PIPENV) run mypy --package $(PACKAGE)
