@@ -1,3 +1,4 @@
+"""Driver factory/creation."""
 
 from enum import Enum
 from typing import Mapping, Optional, Type
@@ -11,7 +12,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from ..util import LoggerMixin
 from .driver import Driver
 
-class DriverName(str, Enum):
+class DriverType(str, Enum):
+    """Common driver types."""
     CHROME = "chrome"
     FIREFOX = "firefox"
 
@@ -19,30 +21,33 @@ class DriverName(str, Enum):
         return self.value
 
 class _SeleniumMapping:
+    """Data structure housing Selenium driver parameters"""
     __slots__ = ("driver_type", "options_type")
 
     def __init__(self, driver_type: Type[WebDriver], options_type: Type):
         self.driver_type = driver_type
         self.options_type = options_type
 
-_selenium_mapping: Mapping[DriverName, _SeleniumMapping] = {
-    DriverName.CHROME: _SeleniumMapping(ChromeDriver, ChromeOptions),
-    DriverName.FIREFOX: _SeleniumMapping(FirefoxDriver, FirefoxOptions)
+_webdriver_type_mapping: Mapping[DriverType, _SeleniumMapping] = {
+    DriverType.CHROME: _SeleniumMapping(ChromeDriver, ChromeOptions),
+    DriverType.FIREFOX: _SeleniumMapping(FirefoxDriver, FirefoxOptions)
 }
-def _driver_type_for(name: DriverName) -> Type[WebDriver]:
-    return _selenium_mapping[name].driver_type
+def _webdriver_type(name: DriverType) -> Type[WebDriver]:
+    return _webdriver_type_mapping[name].driver_type
 
-def _options_type_for(name: DriverName) -> Type:
-    return _selenium_mapping[name].options_type
+def _options_type_for(name: DriverType) -> Type:
+    return _webdriver_type_mapping[name].options_type
 
 class DriverFactory(LoggerMixin):
-    def create(
-            self,
-            driver_name: Optional[DriverName] = None) -> Driver:
-        if not driver_name:
+    def create(self, driver_type: Optional[DriverType] = None) -> Driver:
+        """Construct driver with the provided driver type.
+
+        :param driver_type: type of driver to construct.
+        """
+        if not driver_type:
             driver = Driver(self._try_selenium_drivers())
         else:
-            driver = Driver(self._get_selenium_driver(driver_name))
+            driver = Driver(self._get_selenium_driver(driver_type))
 
         return driver
 
@@ -52,30 +57,35 @@ class DriverFactory(LoggerMixin):
 
         return options
 
-    def _get_selenium_driver(self, driver_name: DriverName) -> WebDriver:
-        driver_type = _driver_type_for(driver_name)
-        options_type = _options_type_for(driver_name)
+    def _get_selenium_driver(self, driver_type: DriverType) -> WebDriver:
+        """Construct a selenium WebDriver with the provided type.
+
+        :param driver_type: type of driver to be created.
+        """
+        webdriver_type = _webdriver_type(driver_type)
+        options_type = _options_type_for(driver_type)
 
         options = options_type()
         options.headless = True
 
-        return driver_type(options=options)
+        return webdriver_type(options=options)
 
     def _try_selenium_drivers(self) -> WebDriver:
+        """Attempt to construct any driver type."""
         exceptions = {}
 
-        for driver_name in DriverName:
+        for driver_type in DriverType:
             try:
-                driver = self._get_selenium_driver(driver_name)
-                self.log.info(f"successfully initialized {driver_name} driver")
+                driver = self._get_selenium_driver(driver_type)
+                self.log.info(f"successfully initialized {driver_type} driver")
 
                 return driver
             except (OSError, Exception) as e:
-                exceptions[driver_name] = e
+                exceptions[driver_type] = e
 
         self.log.error("unable to initialize WebDriver")
-        for (driver_name, exception) in exceptions.items():
-            self.log.error("%s trace:" % (driver_name))
+        for (driver_type, exception) in exceptions.items():
+            self.log.error("%s trace:" % (driver_type))
             self.log.exception(exception)
 
         raise Exception("unable to initialize WebDriver")

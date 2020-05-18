@@ -1,3 +1,4 @@
+"""Cookie management."""
 
 from typing import cast, Dict, List, Mapping, Optional, Union
 import json
@@ -21,6 +22,7 @@ def with_valid_expiry(cookie: Mapping) -> Mapping:
         return cookie
 
 class CookieManager(LoggerMixin):
+    """Loads, maintains, and persists a list of cookie dicts."""
     _cookies: Optional[List[Mapping]]
 
     def __init__(self, file_: str = COOKIE_FILE):
@@ -47,7 +49,7 @@ class CookieManager(LoggerMixin):
         return self.cookies
 
     def add(self, cookies: Union[Dict, List[Dict]]) -> None:
-        """Merge cookies into cookie list
+        """Merge cookies into cookie list.
 
         :param cookies: Cookies to be merged in
         """
@@ -81,6 +83,10 @@ class CookieManager(LoggerMixin):
         return list(map(with_valid_expiry, cookies))
 
     def save(self, cookies: Optional[Union[Dict, List[Dict]]] = None) -> None:
+        """Save cookie list to disk.
+
+        :param cookies: additional cookie(s) to be added before save
+        """
         if cookies:
             self.add(cookies)
 
@@ -92,6 +98,7 @@ class CookieManager(LoggerMixin):
             file_.write(json.dumps(self.cookies))
 
 class CookieManagerMixin:
+    """Mixin providing CookieManger instance as "cookies" attribute."""
     _cookies: CookieManager
 
     @property

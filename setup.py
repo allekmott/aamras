@@ -28,7 +28,7 @@ setup(
     python_requires=">=3.6",
     install_requires=["selenium"],
     extras_require={
-        "dev": ["flake8", "mypy", "pytest", "pytest-cov", "pipenv-setup"]
+        "dev": ["flake8", "mypy", "pytest", "pytest-cov", "pipenv-setup", "sphinx",]
     },
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -41,6 +41,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        "Topic :: Software Development :: Libraries"
+        "Topic :: Software Development :: Libraries",
     ],
 )

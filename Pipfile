@@ -9,6 +9,7 @@ mypy = "*"
 pytest = "*"
 pytest-cov = "*"
 pipenv-setup = "*"
+sphinx = "*"
 
 [packages]
 selenium = "*"
