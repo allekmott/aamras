@@ -11,19 +11,24 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import os.path
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-import aamras.__version__ as __version__
+_here = os.path.abspath(os.path.dirname(__file__))
+_version_file = os.path.join(_here, "../aamras/__version__.py")
+_about = {}
+with open(_version_file) as file_:
+    exec(file_.read(), _about)
 
 # -- Project information -----------------------------------------------------
 
-project = __version__.__title__
-copyright = __version__.__copyright__
-author = __version__.__author__
+project = _about["__title__"]
+copyright = _about["__copyright__"]
+author = _about["__author__"]
 
 # The full version, including alpha/beta/rc tags
-release = __version__.__version__
+release = _about["__version__"]
 
 
 # -- General configuration ---------------------------------------------------
