@@ -22,6 +22,10 @@ setup(
     author=about["__author__"],
     author_email=about["__author_email__"],
     url=about["__url__"],
+    project_urls={
+        "Documentation": "https://aamras.readthedocs.io/",
+        "Source": about["__url__"]
+    },
     packages=find_packages(exclude=["tests", "tests.*"]),
     license=about["__license__"],
     data_files=[("", ["LICENSE"])],
