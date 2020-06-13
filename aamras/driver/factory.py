@@ -89,3 +89,10 @@ class DriverFactory(LoggerMixin):
             self.log.exception(exception)
 
         raise Exception("unable to initialize WebDriver")
+
+def create(driver_type: Optional[DriverType] = None):
+    """Construct driver with the provided driver type.
+
+    :param driver_type: type of driver to construct.
+    """
+    return DriverFactory().create(driver_type)
