@@ -1,55 +1,16 @@
 """Driver wrapper."""
 
-from typing import Callable, List, Optional
+from typing import Optional
 import urllib.parse
 
 from selenium.common.exceptions import InvalidCookieDomainException
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
 
 from ..util import LoggerMixin
 from .cookies import CookieManagerMixin
+from .traversal import TraversalMixin
 
-def _attr_filter(attr: str, value: str) -> Callable[[WebElement], bool]:
-    """Construct an HTML attribute-based filter predicate.
-
-    Only elements having the provided attribute set to the provided value will
-    pass the filter.
-
-    :param attr: name of attribute to filter by
-    :param value: value of attr to filter by
-    """
-    def filter_(element: WebElement) -> bool:
-        return bool(element.get_attribute(attr) == value)
-
-    return filter_
-
-def _tag_filter(tag: str) -> Callable[[WebElement], bool]:
-    """Construct a HTML tag-based filter predicate.
-
-    Only elements having the provided tag will pass the filter.
-
-    :param tag: tag to filter by
-    """
-    def filter_(element: WebElement) -> bool:
-        return bool(element.tag_name == tag)
-
-    return filter_
-
-def _class_filter(class_: str) -> Callable[[WebElement], bool]:
-    """Construct a CSS class-based filter predicate.
-
-    Only elements having the provided class will pass the filter.
-
-    :param class_: name of class to filter by
-    """
-    def filter_(element: WebElement) -> bool:
-        classes = element.get_attribute("class").split(" ")
-        return class_ in classes
-
-    return filter_
-
-class Driver(LoggerMixin, CookieManagerMixin):
+class Driver(LoggerMixin, CookieManagerMixin, TraversalMixin):
     """Abstraction/wrapper of selenium WebDriver."""
     driver: WebDriver
 
@@ -71,6 +32,10 @@ class Driver(LoggerMixin, CookieManagerMixin):
     def url(self):
         """Current URL."""
         return self.driver.current_url
+
+    @property
+    def dom_root(self):
+        return self.driver
 
     def close(self):
         """Save cookies and shut down driver."""
@@ -109,84 +74,6 @@ class Driver(LoggerMixin, CookieManagerMixin):
         self._load_cookies()
         self.log_page()
 
-    def elements(
-            self,
-            id_: Optional[str] = None,
-            name: Optional[str] = None,
-            class_: Optional[str] = None,
-            tag: Optional[str] = None) -> List[WebElement]:
-        """Search the DOM for elements matching provided criteria.
-
-        At least one criterion must be provided.
-
-        :param id_: HTML id attribute value to filter by
-        :param name: HMTL name attribute value to filter by
-        :param class_: CSS class to filter by
-        :param tag: HTML tag name to filter by
-        :returns: List of WebElements matching criteria
-        :raises AssertionError: if no criterion is provided
-        """
-        identifiers_defined = list(filter(bool, [id_, name, class_, tag]))
-        assert identifiers_defined, \
-            "At least one of id_, name, class_, or tag must be defined"
-
-        filters: List[Callable[[WebElement], bool]] = []
-        matches: List[WebElement] = []
-
-        if id_:
-            matches.extend(self.driver.find_elements_by_id(id_))
-            filters.append(_attr_filter("id", id_))
-
-        if name:
-            matches.extend(self.driver.find_elements_by_name(name))
-            filters.append(_attr_filter("name", name))
-
-        if class_:
-            matches.extend(self.driver.find_elements_by_class_name(class_))
-            filters.append(_class_filter(class_))
-
-        if tag:
-            matches.extend(self.driver.find_elements_by_tag_name(tag))
-            filters.append(_tag_filter(tag))
-
-        matches_filtered = matches
-        for filter_ in filters:
-            matches_filtered = list(filter(filter_, matches))
-
-        return matches_filtered
-
-    def element(
-            self,
-            id_: Optional[str] = None,
-            name: Optional[str] = None,
-            class_: Optional[str] = None,
-            tag: Optional[str] = None) -> WebElement:
-        """Serch the DOM for a single element matching provided criteria.
-
-        Only one criterion should be provided.
-
-        :param id_: HTML id attribute value to filter by
-        :param name: HMTL name attribute value to filter by
-        :param class_: CSS class to filter by
-        :param tag: HTML tag name to filter by
-        :returns: WebElement matching criteria or None if no matches were found
-        :raises AssertionError: if no or more than one criterion is provided
-        :raises selenium.webdriver.common.exceptions.NoSuchElementException: if
-            no matching element is found
-        """
-        identifiers_defined = list(filter(bool, [id_, name, class_, tag]))
-        assert len(identifiers_defined) == 1, \
-            "Either id_, name, class_, or tag must be defined"
-
-        if id_:
-            return self.driver.find_element_by_id(id_)
-        elif name:
-            return self.driver.find_element_by_name(name)
-        elif class_:
-            return self.driver.find_element_by_class_name(class_)
-        elif tag:
-            return self.driver.find_element_by_tag_name(tag)
-
     def _log_element_action(
             self,
             action: str,
@@ -194,15 +81,7 @@ class Driver(LoggerMixin, CookieManagerMixin):
             name: Optional[str] = None,
             class_: Optional[str] = None,
             tag: Optional[str] = None):
-        params = {
-            "id": id_,
-            "name": name,
-            "class": class_,
-            "tag": tag
-        }
-
-        criteria_string = ", ".join(
-            [f"{k}=\"{v}\"" for (k, v) in params.items() if v])
+        criteria_string = self.criteria_string(id_, name, class_, tag)
         self.log.info(f"{action} element ({criteria_string})")
 
     def click(
