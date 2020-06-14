@@ -8,9 +8,9 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 from ..util import LoggerMixin
 from .cookies import CookieManagerMixin
-from .traversal import TraversalMixin
+from .element import ElementTraverserMixin
 
-class Driver(LoggerMixin, CookieManagerMixin, TraversalMixin):
+class Driver(LoggerMixin, CookieManagerMixin, ElementTraverserMixin):
     """Abstraction/wrapper of selenium WebDriver."""
     driver: WebDriver
 
@@ -74,16 +74,6 @@ class Driver(LoggerMixin, CookieManagerMixin, TraversalMixin):
         self._load_cookies()
         self.log_page()
 
-    def _log_element_action(
-            self,
-            action: str,
-            id_: Optional[str] = None,
-            name: Optional[str] = None,
-            class_: Optional[str] = None,
-            tag: Optional[str] = None):
-        criteria_string = self.criteria_string(id_, name, class_, tag)
-        self.log.info(f"{action} element ({criteria_string})")
-
     def click(
             self,
             id_: Optional[str] = None,
@@ -94,8 +84,6 @@ class Driver(LoggerMixin, CookieManagerMixin, TraversalMixin):
 
         See :meth:`element` for documentation on criteria.
         """
-        self._log_element_action("click", id_, name, class_, tag)
-
         element = self.element(id_, name, class_, tag)
         element.click()
 
@@ -111,14 +99,12 @@ class Driver(LoggerMixin, CookieManagerMixin, TraversalMixin):
 
         See :meth:`element` for documentation on criteria.
         """
-        self._log_element_action("click", id_, name, class_, tag)
-
         element = self.element(id_, name, class_, tag)
         element.click()
 
         self.log_page()
 
-    def type_(
+    def type(
             self,
             id_: Optional[str] = None,
             name: Optional[str] = None,
@@ -129,7 +115,7 @@ class Driver(LoggerMixin, CookieManagerMixin, TraversalMixin):
         See :meth:`element` for documentation on criteria.
         """
         element = self.element(id_, name, class_)
-        element.send_keys(text)
+        element.type(text)
 
     def screenshot(self, file_path: str):
         """Save a screenshot of the browser window.

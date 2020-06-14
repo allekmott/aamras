@@ -68,13 +68,12 @@ class Traversable:
     def find_element_by_class_name(self, class_str) -> WebElement:
         pass
 
-class TraversalMixin:
-    """Mixin providing various DOM tree traversing methods.
-
-    Recipients must define member 'dom_root', a Traversalable from which
-    traversal will begin.
-    """
+class Traverser:
+    """DOM traverser for selenium elements/drivers."""
     dom_root: Traversable
+
+    def __init__(self, dom_root: Traversable):
+        self.dom_root = dom_root
 
     def elements(
             self,
@@ -146,30 +145,12 @@ class TraversalMixin:
             "Either id_, name, class_, or tag must be defined"
 
         if id_:
-            return self.dom_root.find_element_by_id(id_)
+            match = self.dom_root.find_element_by_id(id_)
         elif name:
-            return self.dom_root.find_element_by_name(name)
+            match = self.dom_root.find_element_by_name(name)
         elif class_:
-            return self.dom_root.find_element_by_class_name(class_)
+            match = self.dom_root.find_element_by_class_name(class_)
         elif tag:
-            return self.dom_root.find_element_by_tag_name(tag)
+            match = self.dom_root.find_element_by_tag_name(tag)
 
-    def criteria_string(
-            self,
-            id_: Optional[str] = None,
-            name: Optional[str] = None,
-            class_: Optional[str] = None,
-            tag: Optional[str] = None) -> str:
-        """Create a string representation of element matching criteria.
-
-        See :meth:`element` for documentation on criteria.
-        """
-        params = {
-            "id": id_,
-            "name": name,
-            "class": class_,
-            "tag": tag
-        }
-
-        return ", ".join(
-            [f"{k}=\"{v}\"" for (k, v) in params.items() if v])
+        return match
